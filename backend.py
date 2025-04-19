@@ -11,6 +11,7 @@ import smtplib
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
 load_dotenv()
+import requests
 
 # Gemini API Configuration
 # Gemini API Configuration
@@ -20,6 +21,24 @@ gemini_model = genai.GenerativeModel('models/gemini-1.5-flash-002')
 
 app = Flask(__name__)
 CORS(app)
+@app.route('/call-node', methods=['POST'])
+def call_node():
+    node_url = "http://localhost:3000/add-reminder"
+    payload = {
+        "petName": "Buddy",
+        "ownerEmail": "owner@example.com",
+        "vaccineName": "Rabies",
+        "vaccineDate": "2025-04-21T08:00:00"  # Ensure this is ISO string
+    }
+
+    try:
+        response = requests.post(node_url, json=payload)
+        return jsonify({"node_response": response.json()})
+    except requests.exceptions.RequestException as e:
+        return jsonify({
+            "error": "Node.js service not available",
+            "details": str(e)
+        }), 500
 
 # JWT Configuration
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'fallback_secret_key')
@@ -210,7 +229,111 @@ def generate_disease():
         if response.text:
             return jsonify({"disease": response.text})
         else:
+            return jsonify({"error": "Failed to predict disease, no content returned."}), 500
+    except Exception as e:
+        # Return any exception that occurs
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/generate_parentingtips", methods=["POST"])
+def generate_parentingtips():
+    data = request.json
+
+    # Getting inputs from the user
+    pet_name = data.get("pet_name")
+    breed = data.get("breed")
+    age = data.get("age")
+    pet_category = data.get("pet_category")
+    gender=data.get("gender")
+    firsttimeraising=data.get("firsttimeraising")
+    petraised=data.get("petraised")
+
+    # Ensure all necessary data is provided
+    if not all([pet_name,breed,age,firsttimeraising]):
+        return jsonify({"error": "pet name , time of owning the pet, breed and pet raising experience are required."}), 400
+
+   
+   # Create a prompt for AI to generate parenting tips for first-time pet owners
+    prompt = f"""
+        You are a veterinary and pet care expert.
+
+        Please provide first-time pet parenting guidance based on the following details:
+        - Pet Name: {pet_name}
+        - Breed: {breed}
+        - Pet Age or Duration of Ownership: {age}
+        - Pet Category (e.g., Dog, Cat, Rabbit): {pet_category}
+        - Is this the user's first time raising a pet? {firsttimeraising}
+        - Has the user raised a different pet before? {petraised}
+
+        The user is a first-time pet parent. Offer detailed yet simple tips including:
+        1. Feeding and diet specific to the breed and age.
+        2. Daily care routines (grooming, hygiene, exercise).
+        3. Emotional bonding and behavioral training.
+        4. Health checkups and vaccinations.
+        5. Any common breed-specific concerns or things to watch out for.
+
+        End with a few encouraging words for the new pet parent to build confidence.
+    """
+
+    try:
+        # Call Gemini API to generate the itinerary
+        response = gemini_model.generate_content(prompt)
+
+        # Check if the response is valid
+        if response.text:
+            return jsonify({"petparenting": response.text})
+        else:
             return jsonify({"error": "Failed to generate diet, no content returned."}), 500
+    except Exception as e:
+        # Return any exception that occurs
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/generate_checkup", methods=["POST"])
+def generate_checkup():
+    data = request.json
+
+    # Getting inputs from the user
+    pet_name = data.get("pet_name")
+    breed = data.get("breed")
+    age = data.get("age")
+    health = data.get("health")
+    pet_category = data.get("pet_category")
+    gender=data.get("gender")
+
+    # Ensure all necessary data is provided
+    if not all([pet_name,breed,age,health]):
+        return jsonify({"error": "pet name , age, breed and health status are required."}), 400
+
+    # Create a prompt based on the user inputs
+    prompt = f"""
+Generate a comprehensive yet easy-to-understand general health checkup guide for a pet based on the following details:
+- Pet Name: {pet_name}
+- Breed: {breed}
+- Age: {age}
+- Gender: {gender}
+- Health Concerns (if any): {health}
+- Pet Category (e.g., dog, cat, rabbit): {pet_category}
+
+Include the following in the response:
+1. A general health checkup checklist tailored to the pet’s age, breed, and category.
+2. Recommended frequency of vet visits and routine tests (bloodwork, dental, weight, etc.).
+3. Signs and symptoms to watch out for that may indicate common illnesses.
+4. Preventive care tips including dental care, flea/tick control, and parasite prevention.
+5. Nutritional advice to support overall well-being.
+6. Suggestions for maintaining good mental and emotional health.
+
+End with a short reminder to the pet owner about the importance of regular checkups and proactive care.
+"""
+
+
+    try:
+        # Call Gemini API to generate the itinerary
+        response = gemini_model.generate_content(prompt)
+
+        # Check if the response is valid
+        if response.text:
+            return jsonify({"checkup": response.text})
+        else:
+            return jsonify({"error": "Failed to generate analysis, no content returned."}), 500
     except Exception as e:
         # Return any exception that occurs
         return jsonify({"error": str(e)}), 500

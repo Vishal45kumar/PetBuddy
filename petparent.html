@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Predict your pet's Disease</title>
+  <title>Pet Parenting Tips</title>
   <style>
     body {
-      background-image: url("disease.jpg");
+      background-image: url("petparent.jpg");
       background-size:cover;
-            background-position: center;
+      background-position:top;
       font-family: 'Segoe UI', sans-serif;
      
       margin: 0;
@@ -15,12 +15,15 @@
     }
 
     .container {
-      max-width: 600px;
+      margin-top: 100px;
       margin: 50px auto;
-      background: white;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      background: white;      
+      background-color: rgba(255, 255, 255, 0.721); /* white with 80% transparency */
+    border-radius: 16px;
+    padding: 5px 30px;
+    max-width: 700px;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     }
 
     h2 {
@@ -56,6 +59,7 @@
   color: #4caaa6;
   font-weight: bold;
 }
+
 
 nav a.active::after {
   content: "";
@@ -101,7 +105,7 @@ nav a.active::after {
       background-color: #207074;
     }
 
-    #disease-output {
+    #diet-output {
       margin-top: 30px;
       background: #f9f9f9;
       padding: 20px;
@@ -119,16 +123,16 @@ nav a.active::after {
 </head>
 <body>
     <header>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <img src="petbuddy.jpg" width="60" alt="Logo" style="border-radius: 8px;" />
-            <h1>Pet Buddy</h1>
-          </div>
-        <nav>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <img src="petbuddy.jpg" width="60" alt="Logo" style="border-radius: 8px;" />
+        <h1>Pet Buddy</h1>
+      </div>
+    <nav>
           <a href="index.html">Home</a>
           <a href="about.html">About Us</a>
           <a href="disease.html">Disease Prediction</a>
           <a href="consultation.html">Consultations</a>
-          <a href="diet.html">Generate your diet plan</a>
+          <a href="diet.html">Generate your diet Plan</a>
           <a href="reminder.html">Set Your Reminder</a>
           <a href="contact.html">Contact Us</a>
           <a id="profile-link" href="profile.html" style="display: none;">Profile</a>
@@ -138,8 +142,8 @@ nav a.active::after {
         </nav>
       </header>
   <div class="container">
-    <h2>Predict your pet's disease</h2>
-    <form id="disease-form">
+    <h2>Get Your First Time Pet Parenting Tips</h2>
+    <form id="petparent-form">
       <label for="pet name" >Pet Name :</label>
       <input type="text" id="pet_name" required>
 
@@ -153,7 +157,7 @@ nav a.active::after {
       <label for="breed">Breed:</label>
       <input type="text" id="breed" required>
 
-      <label for="age">Pet Age:</label>
+      <label for="age">How long have you been raising this pet :</label>
       <input type="number" id="age">
 
       <label for="gender">Pet Gender:</label>
@@ -163,12 +167,15 @@ nav a.active::after {
         <option>Female</option>
       </select>
 
-      <label for="health">Pet Symptoms:</label>
-      <input type="text" id="health" >
-      <button type="submit">Predict Disease</button>
+      <label for="firsttimeraising">Have you raised any pets before:</label>
+      <input type="text" id="firsttimeraising" >
+
+      <label for="petraised">If yes, which pet have you raised </label>
+      <input type="text" id="petraised" >
+      <button type="submit">Generate Better Parenting Tips </button>
     </form>
 
-    <div id="disease-output"></div>
+    <div id="petparent-output"></div>
   </div>
 
   <script>
@@ -196,26 +203,27 @@ nav a.active::after {
             localStorage.clear();
             window.location.href = "login.html";  // Redirect to login page after logout
         }
-    const form = document.getElementById('disease-form');
-    const output = document.getElementById('disease-output');
+    const form = document.getElementById('petparent-form');
+    const output = document.getElementById('petparent-output');
 
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
-      output.innerHTML = '<p class="loading">Predicting your disease...</p>';
+      output.innerHTML = '<p class="loading">Generating your  personalized pet parenting tips ...</p>';
 
       const userInput = {
   pet_name: document.getElementById('pet_name').value,
   breed: document.getElementById('breed').value,
   age: document.getElementById('age').value,
-  health: document.getElementById('health').value,
   gender: document.getElementById('gender').value,
+  firsttimeraising: document.getElementById('firsttimeraising').value,
+  petraised: document.getElementById('petraised').value,
   pet_category: document.getElementById('pet_category').value,
 };
 
 
       try {
   
-        const response = await fetch('http://127.0.0.1:5000/generate_disease', {
+        const response = await fetch('http://127.0.0.1:5000/generate_parentingtips', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(userInput)
@@ -224,17 +232,16 @@ nav a.active::after {
 
 
   const result = await response.json();
-  console.log('Full response:', result);
-
+  console.log("Server response:", result); // <-- Add this
 
   if (response.ok) {
-    output.innerText = result.disease;
+    output.innerText = result.petparenting;
   } else {
     output.innerHTML = `<p style="color: red;">Error: ${result.error}</p>`;
   }
 } catch (err) {
   console.error("Fetch error:", err); // <-- Add this
-  output.innerHTML = '<p style="color: red;">Failed to predict Disease. Please try again later.</p>';
+  output.innerHTML = '<p style="color: red;">Failed to generate diet. Please try again later.</p>';
 }
 
     });
