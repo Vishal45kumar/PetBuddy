@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pet Vaccination Reminder</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  background: #9da48e;
+}
+
+.container {
+  max-width: 500px;
+  margin: 60px auto;
+  padding: 20px;
+  background: rgb(199, 182, 182);
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+.rohit{
+  max-width: 470px;
+  padding: 10px;
+  border-radius: 10px;
+  border: solid 2px black;
+}
+h2 {
+  text-align: center;
+  color: #333;
+}
+
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+}
+
+button {
+  background: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #218838;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Set Vaccination Reminder</h2>
+    <form id="reminderForm">
+      <input type="text" name="petName" class="rohit" placeholder="Pet Name" required />
+      <input type="email" name="ownerEmail" class="rohit" placeholder="Owner Email" required />
+      <input type="text" name="vaccineName" class="rohit" placeholder="Vaccine Name" required />
+      <input type="date" name="vaccineDate" class="rohit" required />
+      <button type="submit">Set Reminder</button>
+    </form>
+    <p id="message"></p>
+  </div>
+  <script>
+    // frontend/scripts/reminder.js
+document
+  .getElementById("reminderForm")
+  .addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch("http://localhost:3000/add-reminder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log(result);
+      alert("Reminder set successfully!");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Something went wrong. Please try again.");
+    }
+  });
+
+  </script>
+</body>
+</html>
